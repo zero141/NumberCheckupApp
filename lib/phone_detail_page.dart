@@ -6,6 +6,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:url_launcher/url_launcher.dart';
+
 class PhoneDetailPage extends StatefulWidget {
   final String phoneNumber;
   final int phoneNumberId;
@@ -122,6 +124,35 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
               ..._comments.map((comment) {
                 return CommentCard(comment: comment);
               }).toList(),
+              const SizedBox(height: 20),
+              if (widget.comments.length == 7)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: InkWell(
+                    onTap: () {
+                      launch(
+                          'https://numbercheckup.com/phone-number/${widget.phoneNumber}');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Більше коментарів на сайті',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               Text(
                 'Залиште коментар:',
