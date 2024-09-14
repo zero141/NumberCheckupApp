@@ -127,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _phoneDetails = 'Помилка: $e';
       });
-    }finally {
+    } finally {
       setState(() {
         _isLoading = false;
       });
@@ -151,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
           rating: rating,
           commentsCount: commentsCount,
           comments: comments,
+          onUpdate: () => searchPhoneNumber(_controller.text), // Передайте функцію для оновлення
         ),
       ),
     );
@@ -207,13 +208,13 @@ class _MyHomePageState extends State<MyHomePage> {
                           : () => searchPhoneNumber(_controller.text),
                       icon: _isLoading
                           ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : Icon(Icons.search, color: Colors.white),
                       label: Text(
                         _isLoading ? 'Пошук...' : 'Пошук',
@@ -319,6 +320,7 @@ class PhoneDetailPage extends StatefulWidget {
   final int rating;
   final int commentsCount;
   final List<dynamic> comments;
+  final VoidCallback onUpdate;
 
   const PhoneDetailPage({
     Key? key,
@@ -327,6 +329,7 @@ class PhoneDetailPage extends StatefulWidget {
     required this.rating,
     required this.commentsCount,
     required this.comments,
+    required this.onUpdate,
   }) : super(key: key);
 
   @override
@@ -367,6 +370,7 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
           'text': newComment,
           'phone_number_id': widget.phoneNumberId,
           'status': _rating.toString(),
+          'source': 3,
         }),
       );
       if (response.statusCode == 200) {
@@ -374,6 +378,7 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
           const SnackBar(content: Text('Коментар успішно додано')),
         );
         _commentController.clear();
+        widget.onUpdate();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не вдалося додати коментар')),
