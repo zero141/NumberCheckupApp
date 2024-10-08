@@ -5,7 +5,6 @@ import 'package:NumberCheckup/widgets/rating_widget.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:url_launcher/url_launcher.dart';
 
 class PhoneDetailPage extends StatefulWidget {
@@ -46,7 +45,11 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
 
     if (newComment.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Коментар не може бути порожнім')),
+        SnackBar(
+          content: Text('Коментар не може бути порожнім'),
+          backgroundColor: Colors.black87,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
@@ -62,27 +65,63 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
           'source': 3,
         }),
       );
+
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Коментар успішно додано')),
+          SnackBar(
+            content: Text('Коментар успішно додано'),
+            backgroundColor: Colors.black87,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
         _commentController.clear();
-        final result = await PhoneNumberService.searchPhoneNumber(widget.phoneNumber);
+        final result =
+            await PhoneNumberService.searchPhoneNumber(widget.phoneNumber);
         if (result != null) {
           setState(() {
             _comments = result['comments'];
           });
         }
-
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не вдалося додати коментар')),
+          SnackBar(
+            content: Text('Не вдалося додати коментар'),
+            backgroundColor: Colors.black87,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Помилка: $e')),
+        SnackBar(
+          content: Text('Помилка: $e'),
+          backgroundColor: Colors.black87,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
+    }
+  }
+
+  // Color _getStarColor(int rating) {
+  //   int red = (255 * (5 - rating) / 4).round();
+  //   int green = (255 * (rating - 1) / 4).round();
+  //   return Color.fromARGB(255, red, green, 0);
+  // }
+
+  Color _getStarColor(int rating) {
+    switch (rating) {
+      case 5:
+        return Colors.lightGreen;
+      case 4:
+        return Colors.green[300]!;
+      case 3:
+        return Colors.orange[200]!;
+      case 2:
+        return Colors.red[200]!;
+      case 1:
+        return Colors.red[400]!;
+      default:
+        return Colors.grey[400]!;
     }
   }
 
@@ -91,132 +130,189 @@ class _PhoneDetailPageState extends State<PhoneDetailPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black87),
           title: Image.asset(
             'assets/photo/NumberCheckup.png',
-            height: 20,
+            height: 24,
           ),
           centerTitle: true,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ListView(
-            children: <Widget>[
-              Text(
-                widget.phoneNumber,
-                style: Theme.of(context).textTheme.headlineLarge,
-                textAlign: TextAlign.center,
+        body: ListView(
+          padding: const EdgeInsets.all(24.0),
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Column(
+                children: [
+                  Text(
+                    widget.phoneNumber,
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  CustomRatingWidget(rating: widget.rating),
+                  SizedBox(height: 8),
+                  Text(
+                    'Кількість коментарів: ${widget.commentsCount}',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.black87,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              CustomRatingWidget(rating: widget.rating),
-              const SizedBox(height: 20),
-              Text(
-                'Кількість коментарів: ${widget.commentsCount}',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
+            ),
+            Container(
+              margin: EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Коментарі',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  SizedBox(height: 16),
+                  ..._comments.map((comment) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: CommentCard(comment: comment),
+                    );
+                  }).toList(),
+                ],
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Коментарі:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ..._comments.map((comment) {
-                return CommentCard(comment: comment);
-              }).toList(),
-              const SizedBox(height: 20),
-              if (widget.comments.length == 7)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: InkWell(
-                    onTap: () {
-                      launch(
-                          'https://numbercheckup.com/phone-number/${widget.phoneNumber}');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Більше коментарів на сайті',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+            ),
+            if (widget.comments.length == 7)
+              Container(
+                margin: EdgeInsets.only(bottom: 24),
+                child: InkWell(
+                  onTap: () {
+                    launch(
+                        'https://numbercheckup.com/phone-number/${widget.phoneNumber}');
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Більше коментарів на сайті',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
                         ),
                       ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 20),
-              Text(
-                'Залиште коментар:',
-                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _commentController,
-                decoration: InputDecoration(
-                  labelText: 'Досвід спілкування з номером',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                maxLines: 3,
+                ],
               ),
-              const SizedBox(height: 20),
-              RatingBar.builder(
-                initialRating: _rating.toDouble(),
-                minRating: 1,
-                direction: Axis.horizontal,
-                allowHalfRating: false,
-                itemCount: 5,
-                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                itemBuilder: (context, index) => Icon(
-                  Icons.star,
-                  color: _getStarColor(index < _rating ? _rating : 0),
-                ),
-                onRatingUpdate: (rating) {
-                  setState(() {
-                    _rating = rating.toInt();
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: addComment,
-                child: const Text(
-                  'Надіслати коментар',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey.shade600,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16, horizontal: 32),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Залиште коментар',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
-                ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      labelText: 'Досвід спілкування з номером',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.black87, width: 1),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    maxLines: 3,
+                  ),
+                  SizedBox(height: 16),
+                  Center(
+                      child: RatingBar.builder(
+                    initialRating: _rating.toDouble(),
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemSize: 36,
+                    itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, index) => Icon(
+                      Icons.star,
+                      color: _getStarColor(index < _rating ? _rating : 0),
+                    ),
+                    onRatingUpdate: (rating) {
+                      setState(() {
+                        _rating = rating.toInt();
+                      });
+                    },
+                  )),
+                  SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: addComment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: Colors.black45, width: 1)),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Надіслати коментар',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Color _getStarColor(int rating) {
-    int red = (255 * (5 - rating) / 4).round();
-    int green = (255 * (rating - 1) / 4).round();
-    return Color.fromARGB(255, red, green, 0);
   }
 }

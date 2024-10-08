@@ -15,8 +15,8 @@ class CustomRatingWidget extends StatelessWidget {
         Text(
           'Рейтинг',
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8.0),
@@ -34,8 +34,19 @@ class CustomRatingWidget extends StatelessWidget {
   }
 
   Color _getStarColor(int rating) {
-    int red = (255 * (5 - rating) / 4).round();
-    int green = (255 * (rating - 1) / 4).round();
-    return Color.fromARGB(255, red, green, 0);
+    switch (rating) {
+      case 5:
+        return Colors.lightGreen;
+      case 4:
+        return Colors.green[300]!;
+      case 3:
+        return Colors.orange[200]!;
+      case 2:
+        return Colors.red[200]!;
+      case 1:
+        return Colors.red[400]!;
+      default:
+        return Colors.grey[400]!;
+    }
   }
 }

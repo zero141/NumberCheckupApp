@@ -24,11 +24,11 @@ class InfoCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 40, color: Colors.blueGrey),
+            Icon(icon, size: 30, color: Colors.blueGrey),
             const SizedBox(height: 12),
             Text(
               value,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
               title,
